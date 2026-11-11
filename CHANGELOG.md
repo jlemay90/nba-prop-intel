@@ -16,3 +16,10 @@
 - Repository target: `jlemay90/nba-prop-intel` (owner directed PUBLIC).
 - Imported original v0.1 code, screenshots, tests, and docs; added `.gitignore` and a living agent start contract.
 - This is a code publication, not a production deployment, not an odds-feed integration, and not live J Hub navigation.
+
+## 2026-11-11 (session 2) — branch `agent/claude/real-browser-smoke-and-provider-contract` (Claude)
+- **Fixed** (KNOWN-ISSUES #7): `app.js` `load()`/`save()` no longer lets a new save overwrite unreadable saved data; raw copy kept under `j-nba-prop-intel-v0.1-corrupt-backup-<timestamp>`; saving blocks if the copy cannot be made. `nba-prop-intel.html` inline script re-synced from `app.js`.
+- **Added** `odds-adapter.js` (read-only provider contract, not loaded by the UI), `fixtures/MOCK-*.json` (synthetic), `tests/adapter.test.js` (10 tests), `real_browser_test.py` (11 real-navigation tests).
+- **Changed** `smoke_test.py`: Chromium path now optional via `CHROMIUM_PATH`; uses `sys.executable` instead of `python`. Behavior otherwise unchanged.
+- **Docs**: provider assessment (DECISIONS), data contract (ARCHITECTURE), test evidence (TEST-REPORT), issue status (KNOWN-ISSUES), next task (AGENT-HANDOFF).
+- `MANIFEST.sha256` is intentionally NOT regenerated: it records the ORIGINAL v0.1 import (`v0.1.0-original`). `app.js`, `nba-prop-intel.html`, `smoke_test.py` hashes now differ by design.

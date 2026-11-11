@@ -1,12 +1,12 @@
-import os,subprocess,time
+import os,subprocess,sys,time
 from playwright.sync_api import sync_playwright
 from pathlib import Path
 ROOT=Path(__file__).parent
-server=subprocess.Popen(['python','-m','http.server','8137','--bind','127.0.0.1'],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+server=subprocess.Popen([sys.executable,'-m','http.server','8137','--bind','127.0.0.1'],cwd=ROOT,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
 time.sleep(.6)
 try:
  with sync_playwright() as p:
-  browser=p.chromium.launch(executable_path='/usr/lib/chromium/chromium',headless=True,args=['--no-sandbox','--disable-extensions'])
+  browser=p.chromium.launch(**({'executable_path':os.environ['CHROMIUM_PATH']} if os.environ.get('CHROMIUM_PATH') else {}),headless=True,args=['--no-sandbox','--disable-extensions'])
   page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
   errs=[];page.on('pageerror',lambda e: errs.append(str(e)))
   page.goto('file://'+str(ROOT/'index.html'),wait_until='load')

@@ -1,0 +1,30 @@
+{
+  "_MOCK": "SYNTHETIC TEST FIXTURE shaped like The Odds API v4 event-odds (verified against docs 2026-11-11). Players/teams/prices are invented. NEVER display as real odds.",
+  "id": "mock-event-0001",
+  "sport_key": "basketball_nba",
+  "commence_time": "2026-11-12T00:30:00Z",
+  "home_team": "Mock Home Team",
+  "away_team": "Mock Away Team",
+  "bookmakers": [
+    {"key": "mockbook_a", "title": "MockBook A", "markets": [
+      {"key": "player_points", "last_update": "2026-11-11T22:50:00Z", "outcomes": [
+        {"name": "Over",  "description": "Mock Player Alpha", "price": -115, "point": 24.5},
+        {"name": "Under", "description": "Mock Player Alpha", "price": -105, "point": 24.5},
+        {"name": "Over",  "description": "Mock Player Beta",  "price": -110, "point": 6.5},
+        {"name": "Over",  "description": "Mock Player Gamma", "price": 1.91,  "point": 10.5},
+        {"name": "Over",  "point": 12.5, "price": -110}
+      ]},
+      {"key": "player_threes", "last_update": "2026-11-11T22:50:00Z", "outcomes": [
+        {"name": "Over", "description": "Mock Player Alpha", "price": 120, "point": 2.5}
+      ]}
+    ]},
+    {"key": "mockbook_b", "title": "MockBook B", "markets": [
+      {"key": "player_points", "last_update": "2026-11-11T20:00:00Z", "outcomes": [
+        {"name": "Over", "description": "Mock Player Alpha", "price": -110, "point": 25.5}
+      ]},
+      {"key": "player_rebounds", "outcomes": [
+        {"name": "Over", "description": "Mock Player Beta", "price": -120, "point": 6.5}
+      ]}
+    ]}
+  ]
+}

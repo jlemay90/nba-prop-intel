@@ -1,0 +1,11 @@
+{
+  "_MOCK": "SYNTHETIC TEST FIXTURE shaped like BALLDONTLIE GET /v1/stats data rows (verified against docs 2026-11-11). Invented values. NEVER display as real statistics.",
+  "data": [
+    {"min": "34", "pts": 22, "reb": 5, "ast": 7, "fg3m": 2, "stl": 1, "blk": 0, "game": {"id": 105, "date": "2026-11-09", "status_state": "final"}},
+    {"min": "31:30", "pts": 30, "reb": 8, "ast": 3, "fg3m": 4, "stl": 0, "blk": 1, "game": {"id": 104, "date": "2026-11-07", "status_state": "final"}},
+    {"min": "0", "pts": 0, "reb": 0, "ast": 0, "fg3m": 0, "stl": 0, "blk": 0, "game": {"id": 103, "date": "2026-11-05", "status_state": "final"}},
+    {"min": "36", "pts": 25, "reb": 9, "ast": 5, "fg3m": 1, "stl": 2, "blk": 0, "game": {"id": 102, "date": "2026-11-03", "status_state": "final"}},
+    {"min": "12", "pts": 8, "reb": 2, "ast": 1, "fg3m": 0, "stl": 0, "blk": 0, "game": {"id": 106, "date": "2026-11-11", "status_state": "in_progress"}},
+    {"min": "29", "pts": 18, "reb": 4, "ast": 6, "fg3m": 3, "stl": 1, "blk": 0, "game": {"id": 101, "date": "2026-11-01", "status_state": "final"}}
+  ]
+}
