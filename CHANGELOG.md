@@ -1,4 +1,12 @@
 # CHANGELOG
+## 2026-11-11 (session 3) — branch `agent/grok-bot/odds-cli` (Grok Bot)
+- **Added** `scripts/fetch-event-odds.js`: dependency-free read-only The Odds API CLI. Exports `run({argv, env, fetchImpl, now, writeFile})` for tests. Key from `ODDS_API_KEY` only; redacted from all output. `--list` (0 credits) and `--event` with `--markets` / `--regions` / `--max-cost` (default 3; refuses before fetch if markets × regions exceeds the cap). Writes `data/snapshots/<eventId>-<collectedAt>.snapshot.json` via `normalizeEventOdds`. Board UI is unchanged and still does not load the adapter.
+- **Added** `tests/fetch-cli.test.js` covering the seven offline acceptance cases (and a few guards). Command that passes on Node 24: `node --test tests/*.js` (a bare `node --test tests/` is treated as a module path on Node 24 and fails).
+- **Fixed** `.gitignore`: session 2 accidentally joined `test-results/` and `data/` into one path `test-results/data/`, so top-level `data/` was not ignored. They are separate entries again.
+- **Docs**: usage in README; contract note in ARCHITECTURE; evidence in TEST-REPORT; next task in AGENT-HANDOFF.
+- `MANIFEST.sha256` is still not regenerated. Independently checked: its hashes also do **not** match the git blobs at tag `v0.1.0-original` (archival Drive-era checksums). The tag itself is untouched.
+- No live provider call, no merge, no deploy, no purchase.
+
 ## 2026-11-11 — v0.1 ORIGINAL WORK (ChatGPT)
 - Built `index.html`, `styles.css`, `app.js` as standalone source-backed manual research prototype.
 - Added three conspicuously synthetic demo records, independent role-based review append, filters, detail pane, old-price and missing-source flags, data export/import with validation.

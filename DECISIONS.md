@@ -19,3 +19,6 @@
 - **Decision:** implement a provider-agnostic, offline-testable contract first (`odds-adapter.js`); wire UI only after a real response is captured. Keep keys server-side/CLI only.
 
 2026-11-11 · **AGENT (Claude) — DEFECT FIX** · Corrupted saved data was preserved on load but destroyed by the next save (reproduced). Now the raw string is copied to `j-nba-prop-intel-v0.1-corrupt-backup-<epoch ms>` before any write; if that copy fails, saving is blocked. Smallest reversible change in `app.js`; single-file build re-synced.
+
+2026-11-11 · **AGENT (Grok Bot) — ODDS CLI** · Implemented the session-2-assigned read-only fetcher exactly as specified: offline-testable `run()` with injected fetch, cost cap before any request, key only from `ODDS_API_KEY`, snapshots git-ignored, UI untouched. Live `--list` / one-event call remains blocked on an owner-created free key (not created this session). Also repaired `.gitignore` so `data/` is actually ignored (session 2 had `test-results/data/` as a single path). `MANIFEST.sha256` vs tag blob mismatch recorded as an observation only; the immutable tag was not moved or rewritten.
+

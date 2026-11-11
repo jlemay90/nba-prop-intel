@@ -24,6 +24,53 @@
 - **Still unknown / not done:** no live provider call was ever made (no key); whether The Odds API's free tier returns player-prop outcomes; provider terms for storing odds in a public repo; Android Chrome on a real device; an official NBA.com stats source was not researched; issue #9 (misleading "Last 20" label) reproduced but not fixed; the UI does not use the adapter yet. **No live feed, deployment or integration exists; nothing here may be described as one.**
 - **Push status:** this container has no GitHub credentials, so the branch exists only in this session's local clone unless the owner/another agent pushes it. (See Permissions.) If the branch is not on GitHub, the work is NOT preserved there.
 
+
+## SESSION 3 REPORT — Grok Bot, 2026-11-11 (America/Chicago)
+**What changed | Exact commit/branch | Tests & evidence | Still unknown | Next agent do X | Acceptance test | Permissions needed**
+
+- **Branch:** `agent/grok-bot/odds-cli`, created from `agent/claude/real-browser-smoke-and-provider-contract` @ `c55bf13` (which itself is based on `main` @ `034142e`). **Work is on this branch only. Not merged. Not deployed. No purchase. No live API call.** Session 2's unmerged work was reused, not re-implemented. The branch will be pushed to GitHub so the next agent can continue from it.
+- **Refs:** ORIGINAL = tag `v0.1.0-original` → commit `aec1f1df1313b343f0453d7af97efe2135a97509` (verified untouched this session; annotated tag object `4103086268f58d1a2eee2f0c9d4fb7c43944e351`). PREVIOUS STABLE = none (no accepted release). CURRENT = this branch (commit SHA recorded in the line immediately below after the work commit exists).
+- **Work commit:** see the "Work commit" line at the end of this report (filled after `git log -1`). This handoff text may sit on a later commit on the same branch.
+- **What changed (bounded, UI untouched):**
+  1. *Read-only odds CLI* as assigned: `scripts/fetch-event-odds.js` exports `run({argv, env, fetchImpl, now, writeFile})`. Key from `env.ODDS_API_KEY` only. `--list` → `GET https://api.the-odds-api.com/v4/sports/basketball_nba/events` (0 credits). `--event <id> --markets … --regions us [--max-cost N]` → `GET …/events/<id>/odds?regions=…&markets=…&oddsFormat=american`. Refuses before any request if markets × regions > `--max-cost` (default 3). Records `x-requests-last` / `x-requests-remaining`. Calls `normalizeEventOdds` with `collectedAt = now()` and `sourceUrl` = request URL minus the key. Writes `data/snapshots/<eventId>-<collectedAt>.snapshot.json` as `{meta, quotes, rejected, quota}`. HTTP 401/422/429 → exit 1, provider message, no snapshot. No bookmakers → prints "No verified quote available", no snapshot. The key and the string `apiKey` are redacted from stdout, stderr, and snapshot contents (including a provider body that echoes the key).
+  2. *Offline tests:* `tests/fetch-cli.test.js` covers acceptance (1)–(7) plus redaction, default cap, cap-equal-allowed, and unsupported-market refusal.
+  3. *`.gitignore` repair:* session 2 accidentally stored `test-results/data/` as a single path, so top-level `data/` was not ignored. Split into `test-results/` and `data/`. `*.snapshot.json` was already present.
+  4. *Docs:* README usage, ARCHITECTURE contract note, CHANGELOG, TEST-REPORT, KNOWN-ISSUES, DECISIONS, this handoff.
+- **Tests (this session, after the change):** `node --check` on `app.js`, `odds-adapter.js`, `scripts/fetch-event-odds.js` PASS; `node --test tests/*.js` PASS 26/26 (10 adapter + 16 CLI); `CHROMIUM_PATH=/usr/bin/google-chrome python3 smoke_test.py` PASS (mobile 390px and desktop 1280px); `CHROMIUM_PATH=/usr/bin/google-chrome python3 real_browser_test.py` PASS 11/11. Session 2 tests were also re-run on the parent branch before editing and passed. Details in TEST-REPORT.md. On Node v24.22.1, a bare `node --test tests/` does **not** work (Node loads the directory as a module); use `node --test tests/*.js`.
+- **Baseline observations:** The immutable tag was not moved. `MANIFEST.sha256` checksums do not match the git blobs at `v0.1.0-original` (e.g. tagged `app.js` is `41ddc47c…`, manifest lists `2965170e…`). Treated as archival Drive-era hashes; manifest was not regenerated and the tag was not rewritten. Preview PNGs are still not in the repo.
+- **Still unknown / not done:** no live provider call (no `ODDS_API_KEY` in the environment; not created); whether the free tier returns player-prop outcomes (KNOWN-ISSUES #11); provider terms for storing odds; Android Chrome on a real device; official NBA.com stats source still unresearched; KNOWN-ISSUES #9 (misleading "Last 20" label) still not fixed; the UI still does not use the adapter or snapshots; `J_Sports_Prop_Framework.md` was not on this computer and was **not accessible** this session. **No live feed, deployment, or UI integration exists; nothing here may be described as one.**
+- **Push status:** filled after the push attempt (this container has `gh` authenticated as `jlemay90`).
+
+## NEXT AGENT — ACTION ORDER (refresh after EVERY session)
+
+**Task (execute, do not ask which):** Fix KNOWN-ISSUES #9: do not label hit-rate windows as "Last 10" / "Last 20" (or "L10" / "L20") when fewer games were entered. Show the **actual selected game count**. Do this in `render()` and `openDetails()` (and `performance()` only if needed) in `app.js`, and re-sync the inline script in `nba-prop-intel.html`. Add a regression test in `real_browser_test.py`. Do not change the JSON schema or localStorage key. Do not start the "Verify quote" panel in this session (that is the task after this one).
+
+**Files:** `app.js` (labels are around the `stats=[5,10,20].map` card template in `render()`, currently near line 45, and the `L${x}` string in `openDetails()`, currently near line 53); `nba-prop-intel.html` (keep the inlined `app.js` identical); `real_browser_test.py`; update `KNOWN-ISSUES.md` (#9), `CHANGELOG.md`, `TEST-REPORT.md`, and this handoff. Branch from `agent/grok-bot/odds-cli` (or `main` if that branch has been merged): `agent/<name>/label-sample-size`.
+
+**Repro (already observed, session 2):** a record with 8 games such as `20, 21, 19, 20, 25, 10, 20, 22` (line 20) shows a "Last 20" cell whose decided count equals the Last 10 result, because `performance(r, 20)` only has 8 values to slice. The app correctly flags "Insufficient verified log" when fewer than 10 games are present, but the window **label** overstates the sample.
+
+**Acceptance:**
+- In a real browser test at 390px, add a non-demo record with exactly 8 game-log values. The card must not display the text "Last 20". Each visible window label must use the actual number of games used in that window (for 8 games: Last 5 stays "Last 5"; the 10- and 20-game windows should read as last-8, or equivalent wording that includes the selected count — not "Last 10" or "Last 20").
+- The detail view must not show `L20` / `L10` as if those full windows existed; it must also show the selected count.
+- Push handling stays correct: for line 20 and values `20, 21, 19, 20, 25, 10, 20, 22`, L5 is `2/3 decided` (three 20s in the first five are pushes). Existing `python3 real_browser_test.py` cases (including that L5 assertion and the corruption-backup tests) and `python3 smoke_test.py` still PASS. `node --test tests/*.js` still PASS 26/26. `node --check app.js` PASS.
+- `nba-prop-intel.html` matches `app.js` for the changed functions (no drift). Schema `j-nba-prop-intel` version `0.1` and localStorage key `j-nba-prop-intel-v0.1` unchanged. Synthetic demos still labelled DEMO ONLY. Tag `v0.1.0-original` untouched.
+
+**Task after that (queue, not this session):** a read-only "Verify quote" panel in the detail view that consumes a snapshot from `data/snapshots/` (or a file the user provides) through `odds-adapter.js` `findQuotes`. Missing/stale/unmatched quotes must show UNAVAILABLE or STALE, never a synthetic fallback. Still no live key in the browser.
+
+**Current blockers:** (a) no Odds API key exists, so the live half of the CLI ( `--list` then one `--event --markets player_points --regions us`) is NOT TESTED; (b) no verified free source for real game logs — BALLDONTLIE `/v1/stats` needs paid ALL-STAR; (c) provider terms for storing/redistributing odds unreviewed (keep snapshots local/git-ignored); (d) `J_Sports_Prop_Framework.md` (ChatGPT Library) was not accessible this session; (e) `MANIFEST.sha256` does not match git blobs at `v0.1.0-original` — do not retag or rewrite it.
+
+**Permissions / decisions needed from J (nothing below was done or assumed):**
+1. Approve (or not) merging branch `agent/grok-bot/odds-cli` into `main`. That branch already contains session 2 (`agent/claude/real-browser-smoke-and-provider-contract`) plus this session's CLI. Do not merge without that approval. Session 2 also asked about merging its branch alone; merging this one supersedes that if approved.
+2. Create a **free** key at the-odds-api.com (site stated, as of session 2, that no card is required) and keep it outside the repo (`ODDS_API_KEY` env var) so a later agent can run the live acceptance: `--list` (0 credits) then ONE `--event` call with `--markets player_points --regions us` (1 credit). Record HTTP status, `x-requests-remaining`, bookmaker count, `player_points` quote count, and rejected reasons in TEST-REPORT.md. Never paste the key into a file or this repo.
+3. Say whether to review the provider's terms before storing any snapshots in Git (default: keep them git-ignored).
+4. Decide on game logs: approve **BALLDONTLIE ALL-STAR $9.99/mo (per league)**, or continue manual entry. Do NOT start the 7-day GOAT trial (requires a payment method) without a decision.
+
+**MUST NOT change:** the `j-nba-prop-intel` JSON export schema/version `0.1` and localStorage key `j-nba-prop-intel-v0.1` (any change needs a tested migration); the tag `v0.1.0-original`; the synthetic-demo labelling; no secrets, family or Hub records in this public repo; no paid plan, deployment, or merge without approval; `MANIFEST.sha256` (records the original import / archival hashes).
+
+---
+## ARCHIVED — action order issued to session 3 (completed by Grok Bot, 2026-11-11; kept for history)
+(session 2's "next agent" assignment, original text below, unchanged)
+
 ## NEXT AGENT — ACTION ORDER (refresh after EVERY session)
 
 **Task (execute, do not ask which):** Build the smallest *real* read-only odds fetcher: a dependency-free Node CLI that calls The Odds API and writes a provenance-stamped snapshot using the existing adapter. Do not touch the board UI in this task.
@@ -46,6 +93,7 @@
 4. Approve (or not) merging branch `agent/claude/real-browser-smoke-and-provider-contract` into `main`; and push it so it exists on GitHub.
 
 **MUST NOT change:** the `j-nba-prop-intel` JSON export schema/version `0.1` and localStorage key `j-nba-prop-intel-v0.1` (any change needs a tested migration); the tag `v0.1.0-original`; the synthetic-demo labelling; no secrets, family or Hub records in this public repo; no paid plan, deployment, or merge without approval; `MANIFEST.sha256` (records the original import).
+
 
 ---
 ## ARCHIVED — action order issued to session 2 (completed by Claude, 2026-11-11; kept for history)
@@ -82,7 +130,7 @@ The user's goal is to **easily see key NBA player props and have each properly r
 - Canonical SOURCE HOME: the PUBLIC GitHub repository `https://github.com/jlemay90/nba-prop-intel` (initial v0.1 files published from original recovered source). The earlier ZIP in Google Drive remains an immutable historical fallback, not the ongoing handoff location. Verify file hashes against `MANIFEST.sha256`. The standalone `nba-prop-intel.html` is a convenience build.
 - **ORIGINAL:** First code-bearing GitHub commit on main after v0.1 import; obtain its actual SHA from Git history (the earlier November 11 source ZIP remains the archival prior artifact).
 - **PREVIOUS STABLE:** unavailable; no accepted user-reviewed production release.
-- **CURRENT WORK (updated session 2):** branch `agent/claude/real-browser-smoke-and-provider-contract` @ `c5b8307` (+ this handoff commit), unmerged. `main` is `034142e`. Earlier: v0.1 imported into the public GitHub repository on `main`. Verify latest commit and create a new `agent/<name>/<task>` branch before any further feature changes; do not assume that a future agent's branch has merged.
+- **CURRENT WORK (updated session 3):** branch `agent/grok-bot/odds-cli` (includes session 2), unmerged. `main` is still `034142e`. See the SESSION 3 REPORT at the top of this file for the exact commit SHA. Earlier: v0.1 imported into the public GitHub repository on `main`. Verify latest commit and create a new `agent/<name>/<task>` branch before any further feature changes; do not assume that a future agent's branch has merged.
 - Global app-continuity rule in `https://github.com/jlemay90/j-god-agent/blob/main/.agents/skills/app-continuity/SKILL.md`; read before making new changes.
 
 ## Source code

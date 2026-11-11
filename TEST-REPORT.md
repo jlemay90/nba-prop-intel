@@ -38,3 +38,23 @@ Serve the static folder in a normal authorized browser and rerun `smoke_test.py`
 
 **Still NOT tested:** Android Chrome / real device; screen reader; any live provider call (none made, no key exists); import of valid-but-large payloads; concurrent tabs writing localStorage; the `index.html` UI consuming the adapter (not wired).
 **Exploratory notes:** an import of a valid export with 0 records replaced the dataset with 0 records after confirmation (by design, see KNOWN-ISSUES #6). A saved record with 8 games displays a card heading "Last 20" with the same 8-game result (KNOWN-ISSUES #9).
+
+---
+# TEST REPORT — 2026-11-11 session 3 (Grok Bot)
+**Environment:** Linux container, Python 3.13.5, Node v24.22.1, Playwright (project-local venv, not committed) driving `/usr/bin/google-chrome` headless via `CHROMIUM_PATH`. Branch `agent/grok-bot/odds-cli`, based on `agent/claude/real-browser-smoke-and-provider-contract` @ `c55bf13`. Session 2 tests were re-run and independently confirmed before this change, then again after.
+
+| Check | Command | Result |
+|---|---|---|
+| JS syntax | `node --check app.js` `odds-adapter.js` `scripts/fetch-event-odds.js` | PASS |
+| Adapter unit tests | `node --test tests/adapter.test.js` | PASS 10/10 (unchanged) |
+| CLI offline acceptance | `node --test tests/*.js` (26 tests: 10 adapter + 16 CLI) | PASS 26/26 |
+| Acceptance (1)–(7) | no key → exit 2, zero fetches; `--list` only `/events`; event URL has `oddsFormat=american` and requested markets, quota from headers; `TESTKEY123` / `apiKey` absent from snapshot and stdout/stderr; HTTP 401/422/429 → exit 1, message, no snapshot; `--max-cost` exceeded → exit 2, zero fetches; empty bookmakers → "No verified quote available", no snapshot | PASS |
+| Extra guards | key echoed in a 401 body is redacted; default max-cost 3; cost equal to cap is allowed; unsupported market refused before fetch | PASS |
+| Real `file://` + `http://127.0.0.1` smoke (390px and 1280px) | `CHROMIUM_PATH=/usr/bin/google-chrome python3 smoke_test.py` | PASS (MOBILE and DESKTOP) |
+| Real-browser regression including corruption backup | `CHROMIUM_PATH=/usr/bin/google-chrome python3 real_browser_test.py` | PASS 11/11 |
+| Secret/PII scan of new files | regex (keys, tokens, private key blocks) | only the documented fake `TESTKEY123` inside tests, never in snapshots or CLI output |
+| Live Odds API `--list` and one `--event` call | no `ODDS_API_KEY` in the environment; not attempted | **NOT TESTED** |
+| `node --test tests/` (bare directory, as written in the session-2 handoff) | Node v24.22.1 treats `tests/` as a module path and fails | use `node --test tests/*.js` instead |
+| `J_Sports_Prop_Framework.md` (ChatGPT Library) | searched this computer; not present | **NOT ACCESSIBLE** this session |
+
+**Still NOT tested:** Android Chrome / real device; screen reader; any live provider call; import of valid-but-large payloads; concurrent tabs; UI consumption of the adapter or snapshots. Generated `mobile-preview.png` / `desktop-preview.png` from smoke_test were discarded and not committed (originals remain in the Drive archive only).

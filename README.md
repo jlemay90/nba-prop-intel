@@ -7,6 +7,21 @@
 ## Run it
 Open `index.html` in a browser with the adjacent `styles.css` and `app.js` files, or serve the folder as static files (e.g., `python -m http.server 8000`). A local web server is preferred on browsers that restrict local-file storage. On Android, host on a private HTTPS endpoint to use across devices after implementing authentication and a backend.
 
+## Read-only odds CLI (not wired into the board)
+
+A dependency-free Node script fetches The Odds API event list (0 credits) or one event's player-prop odds, normalizes them with `odds-adapter.js`, and writes a local provenance-stamped snapshot. The key must come from the `ODDS_API_KEY` environment variable. It is never printed, logged, stored, or written into `source_url`. Snapshots land in `data/snapshots/` and are git-ignored until provider terms are reviewed.
+
+```bash
+# Event list (0 credits)
+node scripts/fetch-event-odds.js --list
+
+# One event, one market, US region (1 credit). Cost = markets × regions.
+# Refuses before any request if that cost exceeds --max-cost (default 3).
+node scripts/fetch-event-odds.js --event <eventId> --markets player_points --regions us
+```
+
+Allowed markets: `player_points`, `player_rebounds`, `player_assists`. Offline tests (fake fetch, no network): `node --test tests/*.js`. A live provider call has **not** been made in this repository's recorded sessions (no key). MOCK fixtures and synthetic demo props are not real odds. This CLI is not a live feed and is not used by `index.html`.
+
 ## What works
 - Mobile-first prop board with market, state and keyword filters.
 - Create/edit/delete research records; quote capture time, book, line, odds, stat logs, injury status and linked source evidence.
