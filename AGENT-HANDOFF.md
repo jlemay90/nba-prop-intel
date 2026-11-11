@@ -22,7 +22,7 @@
   3. *Provider assessment + read-only contract:* `odds-adapter.js` (offline, not wired into the UI) + MOCK fixtures + 10 unit tests. Assessment is in DECISIONS.md; contract in ARCHITECTURE.md.
 - **Tests (clean clone of `c5b8307`):** `node --check` PASS; `node --test tests/adapter.test.js` 10/10; `python3 real_browser_test.py` 11/11 (2 of these FAIL on the original `app.js`, proving the regression guard); `python3 smoke_test.py` mobile+desktop PASS. Details and commands in TEST-REPORT.md.
 - **Still unknown / not done:** no live provider call was ever made (no key); whether The Odds API's free tier returns player-prop outcomes; provider terms for storing odds in a public repo; Android Chrome on a real device; an official NBA.com stats source was not researched; issue #9 (misleading "Last 20" label) reproduced but not fixed; the UI does not use the adapter yet. **No live feed, deployment or integration exists; nothing here may be described as one.**
-- **Push status:** this container has no GitHub credentials, so the branch exists only in this session's local clone unless the owner/another agent pushes it. (See Permissions.) If the branch is not on GitHub, the work is NOT preserved there.
+- **Push status (verified 2026-11-11, ChatGPT):** Pushed to GitHub as `origin/agent/claude/real-browser-smoke-and-provider-contract` at `c55bf136a040ba92663b276eb3e95970d6a1195c` using the owner's connected desktop. Session 2's original container lacked GitHub credentials, but this branch is now preserved remotely. `main` remains unchanged; not merged or deployed.
 
 ## NEXT AGENT — ACTION ORDER (refresh after EVERY session)
 
@@ -37,13 +37,13 @@
 
 **Task after that (queue, not this session):** fix KNOWN-ISSUES #9 (show selected game count; label windows by actual sample size) in `render()`/`performance()` of `app.js`, with a regression test in `real_browser_test.py`; then a read-only "Verify quote" panel in the detail view that consumes a snapshot.
 
-**Current blockers:** (a) no Odds API key exists; (b) no verified free source for real game logs — BALLDONTLIE `/v1/stats` needs paid ALL-STAR; (c) this container cannot push to GitHub; (d) provider terms for storing/redistributing odds unreviewed (keep snapshots local/git-ignored); (e) `J_Sports_Prop_Framework.md` (ChatGPT Library) was not accessible to this session, so the framework wording above is taken from this handoff only.
+**Current blockers:** (a) no Odds API key exists; (b) no verified free source for real game logs — BALLDONTLIE `/v1/stats` needs paid ALL-STAR; (c) a future agent may lack GitHub push credentials (this session-2 branch is now pushed); (d) provider terms for storing/redistributing odds unreviewed (keep snapshots local/git-ignored); (e) `J_Sports_Prop_Framework.md` (ChatGPT Library) was not accessible to this session, so the framework wording above is taken from this handoff only.
 
 **Permissions / decisions needed from J (nothing below was done or assumed):**
 1. Create a **free** key at the-odds-api.com (site states no card required) and keep it outside the repo (env var). Free, no spend.
 2. Say whether to review the provider's terms before storing any snapshots in Git (default: keep them git-ignored).
 3. Decide on game logs: approve **BALLDONTLIE ALL-STAR $9.99/mo (per league)**, or continue manual entry of logs. Do NOT start the 7-day GOAT trial (requires a payment method) without a decision.
-4. Approve (or not) merging branch `agent/claude/real-browser-smoke-and-provider-contract` into `main`; and push it so it exists on GitHub.
+4. Approve (or not) merging branch `agent/claude/real-browser-smoke-and-provider-contract` into `main`. The branch is already pushed; do not merge automatically.
 
 **MUST NOT change:** the `j-nba-prop-intel` JSON export schema/version `0.1` and localStorage key `j-nba-prop-intel-v0.1` (any change needs a tested migration); the tag `v0.1.0-original`; the synthetic-demo labelling; no secrets, family or Hub records in this public repo; no paid plan, deployment, or merge without approval; `MANIFEST.sha256` (records the original import).
 
