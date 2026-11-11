@@ -2,11 +2,20 @@
 
 > **MANDATORY: YOUR NEXT ASSIGNMENT IS BELOW.** Do not stop at summarizing this document or ask the owner to choose a task already assigned. First verify the repository and existing baseline. Then complete exactly one bounded improvement, test it, and write the next agent's assignment back into this same file. Never treat this document as a one-time prompt.
 
+## VERIFIED BOOTSTRAP — 2026-11-11 (America/Chicago)
+- **GitHub public repository:** https://github.com/jlemay90/nba-prop-intel (verified accessible by GitHub connector).
+- **Default branch:** `main`; **first imported original-source commit:** `aec1f1df1313b343f0453d7af97efe2135a97509`.
+- **Immutable original tag:** `v0.1.0-original` (pushed and verified via GitHub connector). The initial README-only repository commit was `f8ec5103d28103c0fdb15fe1cabd36f65f8cae6c`.
+- **Code imported and independently read back:** `index.html`, `styles.css`, `app.js`, single-file `nba-prop-intel.html`, Python tests, and living docs. Original preview PNGs remain in the dated Drive source archive; they have **not** been committed to GitHub. `MANIFEST.sha256` includes archival screenshot hashes.
+- **Fresh test results:** `node --check app.js` PASS; `python browser_smoke_inline.py` PASS at 390px and 1280px (render, add, strict 6/10 hit rate, review append, JSON export, zero uncaught page errors); Python syntax/compile PASS. Actual `file://`/localhost navigation and Android Chrome end-to-end remain **NOT TESTED** after the original environment restriction.
+- **Security boundary:** No credentials or private Hub records were imported. Three sample props remain **SYNTHETIC**. This is an app-code publication only—no production deploy, real odds API, automatic agent worker, or J Hub UI embed.
+- **Next agent deliverable (precise):** Commit a branch containing either (A) evidence from true browser loads + one targeted fix, or (B) a provider assessment and a minimal tested read-only data adapter contract. Update this exact handoff with next task, branch/commit, actual test results, limitations and required approval; do not merge/deploy without approval.
+
 ## NEXT AGENT — ACTION ORDER (refresh after EVERY session)
 
 **Owner's priority:** Turn the existing mobile-first NBA player-prop research board into a properly sourced, useful research tool. Preserve the already-written code. Allow evidence-based analysis, compare lines/odds, investigate opposing explanations, and pass knowledge between agents. Integrate with J Command Hub as an optional Projects link without changing Hub's main home screen or duplicating its canonical records.
 
-**Current assignment:** Establish a verified, reproducible v0.1 Git baseline, then plan the smallest legitimate read-only real-data provider connection. *If the public repository already contains the baseline when you start, skip setup and move to the next uncompleted step rather than recreating anything.*
+**Current assignment (NEXT AGENT MUST EXECUTE):** Run a real page-load/browser smoke test at 390px and desktop (not just inline injection). Repair the first reproducible functional defect if one is found; otherwise complete a source-backed comparison of available NBA player-stat and event-specific prop-odds providers, document one read-only API contract with exact fields and no-data/stale-data behavior, and commit the smallest reversible change on your own branch. Do **not** rebuild the board, re-import the ZIP, request the owner to choose between these steps, buy an API plan, or claim a live feed is running.
 
 1. **Inspect, do not reinvent.** Verify `https://github.com/jlemay90/nba-prop-intel`, record actual default branch and HEAD SHA; read `AGENTS.md`, this handoff, README, architecture, decisions, known issues, tests, app source and the shared [app-continuity skill](https://github.com/jlemay90/j-god-agent/blob/main/.agents/skills/app-continuity/SKILL.md). Read the owner's canonical ChatGPT Library `J_Sports_Prop_Framework.md` when available. If access is missing, say so; do not fabricate content.
 2. **Confirm baseline and protect public data.** Verify files and tests, check secret/personal-data exposure, identify ORIGINAL tag/commit, PREVIOUS STABLE tag/commit if one exists and CURRENT branch/HEAD. Do not relabel untested work as stable. Protect branch history; no forced pushes.
