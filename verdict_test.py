@@ -68,7 +68,7 @@ def main():
     try:
         with sync_playwright() as p:
             browser = p.chromium.launch(
-                executable_path="/opt/meta-chromium/chrome",
+                executable_path="/home/hatch/workspace/.pw-chromium/chrome-linux/chrome",
                 headless=True, args=["--no-sandbox"])
             ctx = browser.new_context(viewport={"width": 390, "height": 844},
                                       accept_downloads=True)
@@ -151,13 +151,12 @@ def main():
             print("IMPORT PASS: PASS and VALUE GONE survive import; "
                   "legacy lowercase 'pass' migrates to PASS")
 
-            # --- desktop width, same browser context (same storage) ---
-            desk = ctx.new_page(viewport={"width": 1280, "height": 800})
-            desk.goto("http://127.0.0.1:8137/index.html",
-                      wait_until="networkidle")
-            assert desk.locator("#totalMetric").inner_text() == "3"
-            assert desk.locator(".prop-card").count() == 3
-            assert desk.locator("body").evaluate(
+            # --- desktop width, same page/context (same storage) ---
+            page.set_viewport_size({"width": 1280, "height": 800})
+            page.reload(wait_until="networkidle")
+            assert page.locator("#totalMetric").inner_text() == "3"
+            assert page.locator(".prop-card").count() == 3
+            assert page.locator("body").evaluate(
                 "(e) => e.scrollWidth <= window.innerWidth + 2"), \
                 "Horizontal overflow on desktop"
             print("DESKTOP PASS: 3 imported records, no overflow")

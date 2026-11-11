@@ -19,3 +19,30 @@
 
 ### Next test
 Serve the static folder in a normal authorized browser and rerun `smoke_test.py` with working localhost navigation, then verify Android Chrome and persisted edits after full restart. Add test cases for whole-number pushes, DNP filtering, historical line movement, malformed imports and storage corruption.
+
+---
+
+# TEST REPORT — 2026-11-11 (agent/scoob, branch `agent/scoob/verdict-persistence`)
+**Environment:** Python 3.12, Node 24.22, Playwright (pip venv) + Chromium 1181 downloaded from the Playwright CDN, Linux VM. App served over real HTTP (`python -m http.server 8137`) and loaded via `file://` — both real page loads with native `localStorage`, NOT inline injection.
+
+### Passed checks
+- `node --check app.js` — PASS.
+- Node harness over `normalRecord()` verdict inputs — PASS for all 8 values (HOLD/LEAN/PASS/VALUE GONE preserved; legacy `watch`/`research` → HOLD, `pass` → PASS; unknown → HOLD). This harness reproduced the defect before the fix (LEAN/PASS/VALUE GONE → HOLD) and verified it after.
+- **`verdict_test.py` (new) — FULL PASS, real browser, HTTP, native storage:**
+  - MOBILE LOAD PASS: 390×844, 3 demo cards, no horizontal overflow.
+  - ADD PASS: form record with verdict LEAN saved, total 4.
+  - RELOAD+DETAIL PASS: after real reload, total still 4; detail view REVIEW VERDICT reads "LEAN — LEAN unless the line moves."
+  - EXPORT PASS: exported JSON record verdict is LEAN.
+  - IMPORT PASS: imported PASS and VALUE GONE survive; legacy lowercase `pass` migrates to PASS.
+  - DESKTOP PASS: 1280×800, 3 imported records, no horizontal overflow.
+  - Zero uncaught page exceptions throughout.
+- **`smoke_test.py` (documented suite, unmodified logic; only the Chromium path and a `python`→`python3` shim changed for this environment) — PASS:**
+  - MOBILE PASS: initial demo, no overflow, add/edit persistence, hit rates, dialog, agent review, export; console exceptions: [].
+  - DESKTOP PASS: initial render, no horizontal overflow.
+  - Note: `file://` navigation WORKED in this environment (the original report's `ERR_BLOCKED_BY_ADMINISTRATOR` did not reproduce here), so the file-load path was genuinely exercised.
+
+### NOT tested / limitations (this session)
+- Cloud-browser page-load attempts FAILED for environment reasons, not app reasons, and were abandoned after two routes: (1) Muse file-hosting URL for the single-file build was refused by the browser's organization policy ("This page is blocked"); (2) jsDelivr serves GitHub `.html` as `text/plain`, so the page displayed as source text instead of rendering. Neither failure implicates the app.
+- Local Playwright setup note: `/tmp` is a 512 MB tmpfs — the Chromium download (~181 MB) repeatedly failed there with write errors until the download was moved to the home filesystem. The venv and browser now live at `~/workspace/.pw-venv` and `~/workspace/.pw-chromium` (not committed). The repo's `verdict_test.py` points at that Chromium path; a future agent with Playwright's own browser installed should adjust `executable_path` or remove it.
+- No Android Chrome QA, no screenreader audit, no live API connection, no accuracy audit against real NBA boxes, no Hub embed. Push/whole-number/DNP/malformed-import/storage-corruption cases from the original "Next test" list remain open.
+- `verdict_test.py` covers the verdict fix only; it does not re-run the full smoke suite (that is `smoke_test.py`, which passed separately above).
