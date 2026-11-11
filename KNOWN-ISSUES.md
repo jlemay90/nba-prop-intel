@@ -1,0 +1,9 @@
+# KNOWN ISSUES
+1. **BLOCKER for live prop use:** No authenticated current NBA odds/game logs. Demo entries are fake. No API keys configured. User must input and verify real records manually.
+2. **HIGH:** Data is browser-local and not synchronized across devices/agents; JSON export/import is snapshot replacement. Concurrent editing not supported. Backup before import.
+3. **HIGH:** Data source links and typed injury states are not independently checked. `Checklist complete` means complete fields, not confirmed truth. Avoid displaying as verified picks.
+4. **MEDIUM:** No betting-book availability or market settlement/intraday status validation. No projection calibration, line-movement backtesting or historical timestamped odds retrieval.
+5. **MEDIUM:** `oddsCaptured` is user-entered and can be inaccurate; timeliness changes as local time passes. No auto-refresh. Injury check requires re-verification after six hours (v0.1 heuristic; not a league standard).
+6. **MEDIUM:** Imports replace the whole local dataset after confirmation, not conflict-merged. Payload schema version 0.1 must be migrated explicitly on future releases.
+7. **MEDIUM:** A corrupted existing `localStorage` entry is not overwritten during load, but a new subsequent save could replace it. Back up raw browser storage before recovery. Add explicit storage recovery mode.
+8. **LOW:** Full end-to-end browser load via file:// and localhost was blocked by the test environment's navigation administrator rule. Inline Chromium smoke test with simulated localStorage passed but true cross-session native storage round-trip remains untested.
