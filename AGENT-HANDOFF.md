@@ -11,7 +11,45 @@
 - **Security boundary:** No credentials or private Hub records were imported. Three sample props remain **SYNTHETIC**. This is an app-code publication only—no production deploy, real odds API, automatic agent worker, or J Hub UI embed.
 - **Next agent deliverable (precise):** Commit a branch containing either (A) evidence from true browser loads + one targeted fix, or (B) a provider assessment and a minimal tested read-only data adapter contract. Update this exact handoff with next task, branch/commit, actual test results, limitations and required approval; do not merge/deploy without approval.
 
+## SESSION 2 REPORT — Claude, 2026-11-11 (America/Chicago)
+**What changed | Exact commit/branch | Tests & evidence | Still unknown | Next agent do X | Acceptance test | Permissions needed**
+
+- **Branch:** `agent/claude/real-browser-smoke-and-provider-contract` (from `main` @ `034142e`). **Work commit: `c5b8307f69515e3f3c8816f92c7795f37b98363a`.** This handoff text is committed on top of it in a later commit on the same branch (`git log` shows it). **Not merged. Not deployed. Not pushed unless the "Push status" line below says otherwise.**
+- **Refs:** ORIGINAL = tag `v0.1.0-original` → `aec1f1d` (verified untouched, resolves to tag object `4103086…`). PREVIOUS STABLE = none (no accepted release). CURRENT = the branch above.
+- **What changed (bounded):**
+  1. *Real-browser verification* (the prior blocker): real `file://` and `http://127.0.0.1` loads at 390px and 1280px, plus native localStorage persistence across a full browser restart, all PASS.
+  2. *First reproducible defect fixed:* corrupted saved data was destroyed by the next save (KNOWN-ISSUES #7). `app.js` now copies the raw string to `j-nba-prop-intel-v0.1-corrupt-backup-<ms>` before any write and blocks saving if that copy fails. `nba-prop-intel.html` re-synced.
+  3. *Provider assessment + read-only contract:* `odds-adapter.js` (offline, not wired into the UI) + MOCK fixtures + 10 unit tests. Assessment is in DECISIONS.md; contract in ARCHITECTURE.md.
+- **Tests (clean clone of `c5b8307`):** `node --check` PASS; `node --test tests/adapter.test.js` 10/10; `python3 real_browser_test.py` 11/11 (2 of these FAIL on the original `app.js`, proving the regression guard); `python3 smoke_test.py` mobile+desktop PASS. Details and commands in TEST-REPORT.md.
+- **Still unknown / not done:** no live provider call was ever made (no key); whether The Odds API's free tier returns player-prop outcomes; provider terms for storing odds in a public repo; Android Chrome on a real device; an official NBA.com stats source was not researched; issue #9 (misleading "Last 20" label) reproduced but not fixed; the UI does not use the adapter yet. **No live feed, deployment or integration exists; nothing here may be described as one.**
+- **Push status:** this container has no GitHub credentials, so the branch exists only in this session's local clone unless the owner/another agent pushes it. (See Permissions.) If the branch is not on GitHub, the work is NOT preserved there.
+
 ## NEXT AGENT — ACTION ORDER (refresh after EVERY session)
+
+**Task (execute, do not ask which):** Build the smallest *real* read-only odds fetcher: a dependency-free Node CLI that calls The Odds API and writes a provenance-stamped snapshot using the existing adapter. Do not touch the board UI in this task.
+
+**Files:** create `scripts/fetch-event-odds.js` and `tests/fetch-cli.test.js`; reuse `odds-adapter.js` (`normalizeEventOdds`) and `fixtures/MOCK-event-odds.json`; add a short usage block to `README.md`. `.gitignore` already ignores `data/` and `*.snapshot.json`. Branch from `agent/claude/real-browser-smoke-and-provider-contract` (or `main` if it has been merged): `agent/<name>/odds-cli`.
+
+**Design (fixed):** export `run({argv, env, fetchImpl, now, writeFile})` so tests inject a fake fetch. Key from `env.ODDS_API_KEY` only; never print, log, store, or put it in `source_url`. Commands: `--list` → `GET https://api.the-odds-api.com/v4/sports/basketball_nba/events` (0 credits); `--event <id> --markets player_points[,player_rebounds,player_assists] --regions us [--max-cost N]` → `GET …/events/<id>/odds?regions=…&markets=…&oddsFormat=american`. Refuse before any request if markets × regions > `--max-cost` (default 3). Record `x-requests-last` / `x-requests-remaining` headers. Run `normalizeEventOdds` with `collectedAt = now()` and `sourceUrl` = request URL minus `apiKey`. Write `data/snapshots/<eventId>-<collectedAt>.snapshot.json` containing `{meta, quotes, rejected, quota}`.
+
+**Acceptance — offline (automated, must pass with `node --test tests/`):** (1) no key → exit code 2, zero fetch calls; (2) `--list` hits only the `/events` URL; (3) event call URL contains `oddsFormat=american` and the requested markets, cost read from header; (4) with key `TESTKEY123`, the written snapshot and all stdout/stderr contain neither the key nor `apiKey`; (5) HTTP 401/422/429 → exit 1, provider message shown, no snapshot written; (6) `--max-cost` exceeded → exit 2 before any fetch; (7) response with no bookmakers → prints "No verified quote available", writes no snapshot. Existing `node --test tests/adapter.test.js`, `python3 real_browser_test.py`, `python3 smoke_test.py` must still pass.
+**Acceptance — live (needs owner key; otherwise record NOT TESTED, do not block the offline work):** run `--list` (0 credits) then ONE call `--markets player_points --regions us` for a single event (1 credit). Record in TEST-REPORT.md: HTTP status, `x-requests-remaining`, bookmaker count, number of `player_points` quotes, and any rejected reasons. This resolves KNOWN-ISSUES #11 first half. Never paste a key into any file or doc.
+
+**Task after that (queue, not this session):** fix KNOWN-ISSUES #9 (show selected game count; label windows by actual sample size) in `render()`/`performance()` of `app.js`, with a regression test in `real_browser_test.py`; then a read-only "Verify quote" panel in the detail view that consumes a snapshot.
+
+**Current blockers:** (a) no Odds API key exists; (b) no verified free source for real game logs — BALLDONTLIE `/v1/stats` needs paid ALL-STAR; (c) this container cannot push to GitHub; (d) provider terms for storing/redistributing odds unreviewed (keep snapshots local/git-ignored); (e) `J_Sports_Prop_Framework.md` (ChatGPT Library) was not accessible to this session, so the framework wording above is taken from this handoff only.
+
+**Permissions / decisions needed from J (nothing below was done or assumed):**
+1. Create a **free** key at the-odds-api.com (site states no card required) and keep it outside the repo (env var). Free, no spend.
+2. Say whether to review the provider's terms before storing any snapshots in Git (default: keep them git-ignored).
+3. Decide on game logs: approve **BALLDONTLIE ALL-STAR $9.99/mo (per league)**, or continue manual entry of logs. Do NOT start the 7-day GOAT trial (requires a payment method) without a decision.
+4. Approve (or not) merging branch `agent/claude/real-browser-smoke-and-provider-contract` into `main`; and push it so it exists on GitHub.
+
+**MUST NOT change:** the `j-nba-prop-intel` JSON export schema/version `0.1` and localStorage key `j-nba-prop-intel-v0.1` (any change needs a tested migration); the tag `v0.1.0-original`; the synthetic-demo labelling; no secrets, family or Hub records in this public repo; no paid plan, deployment, or merge without approval; `MANIFEST.sha256` (records the original import).
+
+---
+## ARCHIVED — action order issued to session 2 (completed by Claude, 2026-11-11; kept for history)
+(original text below, unchanged)
 
 **Owner's priority:** Turn the existing mobile-first NBA player-prop research board into a properly sourced, useful research tool. Preserve the already-written code. Allow evidence-based analysis, compare lines/odds, investigate opposing explanations, and pass knowledge between agents. Integrate with J Command Hub as an optional Projects link without changing Hub's main home screen or duplicating its canonical records.
 
@@ -44,7 +82,7 @@ The user's goal is to **easily see key NBA player props and have each properly r
 - Canonical SOURCE HOME: the PUBLIC GitHub repository `https://github.com/jlemay90/nba-prop-intel` (initial v0.1 files published from original recovered source). The earlier ZIP in Google Drive remains an immutable historical fallback, not the ongoing handoff location. Verify file hashes against `MANIFEST.sha256`. The standalone `nba-prop-intel.html` is a convenience build.
 - **ORIGINAL:** First code-bearing GitHub commit on main after v0.1 import; obtain its actual SHA from Git history (the earlier November 11 source ZIP remains the archival prior artifact).
 - **PREVIOUS STABLE:** unavailable; no accepted user-reviewed production release.
-- **CURRENT WORK:** v0.1 imported into the public GitHub repository on `main`. Verify latest commit and create a new `agent/<name>/<task>` branch before any further feature changes; do not assume that a future agent's branch has merged.
+- **CURRENT WORK (updated session 2):** branch `agent/claude/real-browser-smoke-and-provider-contract` @ `c5b8307` (+ this handoff commit), unmerged. `main` is `034142e`. Earlier: v0.1 imported into the public GitHub repository on `main`. Verify latest commit and create a new `agent/<name>/<task>` branch before any further feature changes; do not assume that a future agent's branch has merged.
 - Global app-continuity rule in `https://github.com/jlemay90/j-god-agent/blob/main/.agents/skills/app-continuity/SKILL.md`; read before making new changes.
 
 ## Source code
