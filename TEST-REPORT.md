@@ -53,8 +53,21 @@ Serve the static folder in a normal authorized browser and rerun `smoke_test.py`
 | Real `file://` + `http://127.0.0.1` smoke (390px and 1280px) | `CHROMIUM_PATH=/usr/bin/google-chrome python3 smoke_test.py` | PASS (MOBILE and DESKTOP) |
 | Real-browser regression including corruption backup | `CHROMIUM_PATH=/usr/bin/google-chrome python3 real_browser_test.py` | PASS 11/11 |
 | Secret/PII scan of new files | regex (keys, tokens, private key blocks) | only the documented fake `TESTKEY123` inside tests, never in snapshots or CLI output |
-| Live Odds API `--list` and one `--event` call | no `ODDS_API_KEY` in the environment; not attempted | **NOT TESTED** |
+| Live Odds API `--list` and one `--event` call | no `ODDS_API_KEY` at the time that table was written | later completed — see session 3 live call section below |
 | `node --test tests/` (bare directory, as written in the session-2 handoff) | Node v24.22.1 treats `tests/` as a module path and fails | use `node --test tests/*.js` instead |
 | `J_Sports_Prop_Framework.md` (ChatGPT Library) | searched this computer; not present | **NOT ACCESSIBLE** this session |
 
 **Still NOT tested:** Android Chrome / real device; screen reader; any live provider call; import of valid-but-large payloads; concurrent tabs; UI consumption of the adapter or snapshots. Generated `mobile-preview.png` / `desktop-preview.png` from smoke_test were discarded and not committed (originals remain in the Drive archive only).
+
+---
+# TEST REPORT — 2026-11-11 session 3 live call (Grok Bot)
+**Environment:** same branch `agent/grok-bot/odds-cli` @ `fffa71f`, Node v24.22.1, `ODDS_API_KEY` set in the environment (value never printed, logged, or written to the repo). Snapshot path is git-ignored. America/Chicago.
+
+| Check | Command | Result |
+|---|---|---|
+| Live `--list` (0 credits) | `node scripts/fetch-event-odds.js --list` | PASS, exit 0. 14 NBA events. stdout quota: `x-requests-last=0` `x-requests-remaining=500`. stderr empty. No `apiKey` in output. |
+| Live one-event player-points (1 credit) | `node scripts/fetch-event-odds.js --event 37f4c00ff7ec01d5aa7c33dd1ac84bbc --markets player_points --regions us` | PASS, exit 0. Event: Boston Celtics at Toronto Raptors, `commence_time` 2026-11-12T00:10:00Z. Snapshot written (git-ignored) with `collectedAt` 2026-11-11T23:35:07.440Z. `quotes=256` `rejected=0` `estimatedCost=1` `x-requests-last=1` `x-requests-remaining=499`. 15 players, 6 books: betmgm, betonlineag, betrivers, bovada, draftkings, fanduel. Market on quotes is `Points` (mapped from `player_points`). All 256 quotes carry the 10 required provenance fields. `sourceUrl` is the request URL with no credential. CLI does not print the raw HTTP status; success is inferred from exit 0 + snapshot. |
+| Key leakage | inspected stdout, stderr, and snapshot for `apiKey` and the key itself | none found |
+| Snapshot committed? | `git status` shows `data/` ignored | not committed, as required |
+
+**Still NOT tested:** `player_rebounds` and `player_assists` live; `--list` then a second event (not done, to conserve credits); Android Chrome; UI consumption of the snapshot; provider terms review.

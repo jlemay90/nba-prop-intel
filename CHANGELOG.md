@@ -5,7 +5,8 @@
 - **Fixed** `.gitignore`: session 2 accidentally joined `test-results/` and `data/` into one path `test-results/data/`, so top-level `data/` was not ignored. They are separate entries again.
 - **Docs**: usage in README; contract note in ARCHITECTURE; evidence in TEST-REPORT; next task in AGENT-HANDOFF.
 - `MANIFEST.sha256` is still not regenerated. Independently checked: its hashes also do **not** match the git blobs at tag `v0.1.0-original` (archival Drive-era checksums). The tag itself is untouched.
-- No live provider call, no merge, no deploy, no purchase.
+- No merge, no deploy, no purchase. A live provider call was completed later in this same session (see the live-call TEST-REPORT section); the key was not committed.
+- **Live verification (later same session):** free-tier The Odds API `--list` (14 events, 0 credits) and one `--event --markets player_points --regions us` (Celtics at Raptors) returned 256 real quotes, 0 rejected, 6 US books, 499 credits remaining. Snapshot git-ignored; key not committed. See TEST-REPORT and KNOWN-ISSUES #11.
 
 ## 2026-11-11 — v0.1 ORIGINAL WORK (ChatGPT)
 - Built `index.html`, `styles.css`, `app.js` as standalone source-backed manual research prototype.
