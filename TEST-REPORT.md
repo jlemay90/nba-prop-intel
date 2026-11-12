@@ -46,3 +46,27 @@ Serve the static folder in a normal authorized browser and rerun `smoke_test.py`
 - Local Playwright setup note: `/tmp` is a 512 MB tmpfs — the Chromium download (~181 MB) repeatedly failed there with write errors until the download was moved to the home filesystem. The venv and browser now live at `~/workspace/.pw-venv` and `~/workspace/.pw-chromium` (not committed). The repo's `verdict_test.py` points at that Chromium path; a future agent with Playwright's own browser installed should adjust `executable_path` or remove it.
 - No Android Chrome QA, no screenreader audit, no live API connection, no accuracy audit against real NBA boxes, no Hub embed. Push/whole-number/DNP/malformed-import/storage-corruption cases from the original "Next test" list remain open.
 - `verdict_test.py` covers the verdict fix only; it does not re-run the full smoke suite (that is `smoke_test.py`, which passed separately above).
+
+---
+
+# TEST REPORT — 2026-11-12 (agent/scoob, branch `agent/scoob/verdict-persistence`)
+**Environment:** Python 3.12, Node 24.22, Playwright (pip venv) + Chromium 1181, Linux VM. App served over real HTTP (`python -m http.server 8138`), real page loads with native `localStorage`.
+
+### Passed checks
+- `node --check odds-adapter.js` — PASS. Node harness over `normalizeEventOdds` with the committed `ok` fixture — PASS, exact contract row (provider the-odds-api, book draftkings, event "New York Knicks @ Boston Celtics — 2026-11-12T23:00:00Z", player Jayson Tatum, market player_points, side Over, line 26.5, price -110, source_url `fixtures/odds-api-mock.json#ok`, collected_at, last_update, mock true).
+- **`odds_adapter_test.py` (new) — FULL PASS, real browser, HTTP, native storage:**
+  - MOCK OK PASS: fresh-timestamp fixture row renders with the exact contract fields + MOCK badge.
+  - NO-MARKET PASS: UNAVAILABLE ("No line posted yet"), no fabricated line.
+  - STALE PASS: HOLD with stale reason, row fields still shown.
+  - NO-KEY PASS: live mode refuses (NO_KEY), zero API calls observed.
+  - QUOTA PASS: stubbed 429 → UNAVAILABLE ("quota exhausted"), dummy key never appears in page text.
+  - COMMITTED FIXTURE PASS: real `fixtures/odds-api-mock.json` loads, mock flagged, fail-closed by age (OK or HOLD depending on run time).
+  - SINGLE-FILE PASS: `nba-prop-intel.html` carries the panel and adapter.
+  - Zero uncaught page exceptions throughout.
+- **Regression — `verdict_test.py` FULL PASS** (all six checks: mobile load, add LEAN, reload+detail, export, import, desktop). **`smoke_test.py` PASS** (mobile + desktop, no console exceptions). The odds panel did not break any existing flow.
+- One 404 in the HTTP log during the adapter run: `/favicon.ico` (no favicon shipped) — cosmetic only.
+
+### NOT tested / limitations (this session)
+- No live Odds API call was made — no key exists. CORS from the static page, the exact live response shape, and per-event book coverage remain unconfirmed until the owner creates a free account and pastes a key. If CORS blocks the browser call, the outcome is "server-side fetch required," not a proxy workaround.
+- The committed fixture's `ok` scenario is a dated snapshot (2026-11-12 16:00Z); viewed more than 60 minutes after that, it correctly reports HOLD. That is the fail-closed rule working, not a defect.
+- No Android Chrome QA, no screenreader audit, no accuracy audit against real NBA boxes, no Hub embed. Push/whole-number/DNP/malformed-import/storage-corruption cases from the original "Next test" list remain open.
