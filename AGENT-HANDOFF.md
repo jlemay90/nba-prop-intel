@@ -57,7 +57,42 @@
 - **Still unknown / not done:** #9 (deferred by owner); the panel does not check that the quote's game is the record's game (KNOWN-ISSUES #14: warning only); Android Chrome real device; screen reader; keyboard activation of the file-picker label; `player_rebounds`/`player_assists` live; provider terms for storing odds; `browser_smoke_inline.py` not updated or run (legacy). The panel verifies a price only. It is **not** a pick, a live feed, or an auto-refresh.
 - **Push status:** `agent/grok-bot/verify-quote-panel` pushed to `origin`. If you are reading this on GitHub, the push succeeded.
 
+## SESSION 5 REPORT — Grok Bot, 2026-11-11 (America/Chicago)
+**What changed | Exact commit/branch | Tests & evidence | Still unknown | Next agent do X | Acceptance test | Permissions needed**
+
+- **Owner requests (J, 2026-11-11):** t72u "Can we just get rid of the fake numbers?", then t73u "No you should add the real props by using the system." Done: seeds removed, and the board is filled from real Odds API snapshots (CLI → adapter → records). An empty-board-only version was started, then stopped per t73u; it was never pushed.
+- **Branch:** `agent/grok-bot/real-props-from-snapshot`, from `agent/grok-bot/verify-quote-panel` @ `c1dfb3049631925cd7d5abffb77df86df8045e52`. **Work commit: `1101fd57e1f985d96e29a322e4d4a4b6de5edadf`.** This handoff is the next commit. Pushed to `origin`, no force-push. **Not merged, not deployed.**
+- **Refs:** ORIGINAL `v0.1.0-original` → `aec1f1d…` untouched; `main` = `034142e…` untouched; PREVIOUS STABLE none.
+- **What changed:**
+  1. No seeded sample props. A fresh board is empty and writes nothing. `load()` drops saved demo records (`demo:true` or ids `demo-one/two/three`), and non-demo records are untouched. A demo record arriving by Import is still labelled DEMO ONLY until the next load drops it.
+  2. **Add quotes to the board** button (board hero, multiple files). Rules are in ARCHITECTURE: one card per player/side at the main line, fixed book order, fresh pregame quotes only, no invented logs/injury/team/notes, HOLD, stable ids so re-adding refreshes the price. MOCK snapshots give DEMO ONLY cards that can never refresh a real card.
+  3. `scripts/snapshot-to-board.js`: same rules offline; writes a board file under git-ignored `data/` only.
+- **Live fill (3 credits; 496 remain):** about 7:18 PM CT, player_points, US books. Magic at Jazz (24 cards), Warriors at Rockets (30), Thunder at Blazers (30) = **84 real cards**, cross-checked against the raw snapshots with 0 mismatches. Tomorrow's two games had no props posted yet (0 credits). Files on the box, git-ignored, not committed: `data/snapshots/{423255883d0e…,f41d186dc7a7…,d4f288eeb013…}-2026-11-12T01:18:3*.snapshot.json` and `data/board-2026-11-11.json`. These prices go stale after ~7:46 PM CT, and the games start at 8:10–9:10 PM CT.
+- **Tests:** `node --test tests/*.js` 48/48; `node scripts/build-single-file.js --check` in sync; `smoke_test.py` MOBILE+DESKTOP PASS; `real_browser_test.py` 36/36. Details in TEST-REPORT.
+- **Still not done:** team/opponent unknown on imported cards (#16); no game logs/injury (still manual or paid); moved lines leave old cards (#17); finished-game cards are not cleaned up; no hosted copy, so J has to open a local file; Android not tested.
+
 ## NEXT AGENT — ACTION ORDER (refresh after EVERY session)
+
+**Task (execute, do not ask which):** Close KNOWN-ISSUES #14 (event-date guard for the Verify quote panel), as specified in the archived session-4 order below, with these updates: `verifyRecord()` / `renderPanelBody()` are in `verify-quote.js` (search for `function verifyRecord`). Reuse the existing `chicagoDate()` helper in that file (America/Chicago, already used by `snapshotToRecords`) to drop exact-match quotes whose event start date ≠ `record.gameDate`; if none remain, return UNAVAILABLE `Quote is for a different game date (event <date>, record <gameDate>)`. Keep `findQuotes` unchanged. Cards created by "Add quotes to the board" already carry the Chicago event date, so they must still verify OK against their own snapshot. Branch from `agent/grok-bot/real-props-from-snapshot` (or `main` if merged): `agent/<name>/verify-event-date`.
+
+**Acceptance:** as in the archived session-4 order (MOCK record with `gameDate` 2026-11-11 → OK; 2026-11-12 → UNAVAILABLE with no prices; TZ-independence test; one real-browser case at 390px), plus: an imported card (Add quotes from the de-flagged MOCK temp file, as in `real_browser_test.py`) still shows Verify OK. All existing tests stay green: `node --test tests/*.js` (48 + new), `real_browser_test.py` (36 + new), `smoke_test.py`, `node scripts/build-single-file.js --check`. Do not re-add seed data. Do not commit snapshots or board files. Do not implement #9.
+
+**Task after that (queue, not next session):** clean up finished games: an opt-in "Remove past-game imported cards" action, only for records whose reviewer is `Odds API snapshot import` and whose `gameDate` is before today, after a confirmation. Needs J's OK, since it deletes records.
+
+**Current blockers:** (a) no verified free source for game logs (BALLDONTLIE ALL-STAR is paid); (b) provider terms for storing odds unreviewed, so snapshots stay git-ignored; (c) `J_Sports_Prop_Framework.md` not accessible from this box; (d) `MANIFEST.sha256` ≠ git blobs at the tag (do not rewrite); (e) the Odds API key exists only in Grok Bot's environment (not Vault, not repo); (f) no hosted copy: J opens a local file.
+
+**Permissions / decisions needed from J (nothing below was done or assumed):**
+1. Approve (or not) merging `agent/grok-bot/real-props-from-snapshot` into `main` (it contains sessions 2–5).
+2. Hosting: whether to publish the static board (e.g. GitHub Pages) so J can open it on his phone. That is a deploy and needs approval. Snapshots would still be loaded from his device, never hosted.
+3. Provider terms review before storing any snapshots in Git (default: no).
+4. Game logs: approve BALLDONTLIE ALL-STAR $9.99/mo or keep entering them by hand. No GOAT trial without a decision.
+5. Whether to save the Odds API key in Settings › Vault for other agents (never in the repo).
+
+**MUST NOT change:** schema `j-nba-prop-intel` 0.1 and localStorage key `j-nba-prop-intel-v0.1`; tag `v0.1.0-original`; DEMO ONLY labelling for any demo record; no seeded fake props; no secrets, family or Hub records, committed snapshots or board files; no paid plan, deployment or merge without approval; `MANIFEST.sha256`.
+
+---
+## ARCHIVED — action order issued to session 5 (session 5 did the owner's new request instead; #14 carried forward above)
+
 
 **Task (execute, do not ask which):** Close KNOWN-ISSUES #14: the Verify quote panel must not report **OK** (or STALE) for a quote from a different game than the record. Today `verifyRecord()` in `verify-quote.js` returns whatever `findQuotes` returns and `renderPanelBody()` only shows a warning when the event's start date differs from the record's `gameDate`. Change `verifyRecord()` so that, after `findQuotes`, exact-match quotes whose event start date (in **America/Chicago**, the owner's zone, computed with `Intl.DateTimeFormat('en-CA',{timeZone:'America/Chicago'})`, not the browser's zone) differs from `record.gameDate` are excluded. If none remain, return `UNAVAILABLE` with reason `Quote is for a different game date (event <date>, record <gameDate>)`. Keep `odds-adapter.js` `findQuotes` unchanged (its contract and its 10 tests stay as they are). Then remove the now-redundant warning or keep it only for the informational case. Rebuild `nba-prop-intel.html` with `node scripts/build-single-file.js`.
 
@@ -171,7 +206,7 @@ The user's goal is to **easily see key NBA player props and have each properly r
 - Canonical SOURCE HOME: the PUBLIC GitHub repository `https://github.com/jlemay90/nba-prop-intel` (initial v0.1 files published from original recovered source). The earlier ZIP in Google Drive remains an immutable historical fallback, not the ongoing handoff location. Verify file hashes against `MANIFEST.sha256`. The standalone `nba-prop-intel.html` is a convenience build.
 - **ORIGINAL:** First code-bearing GitHub commit on main after v0.1 import; obtain its actual SHA from Git history (the earlier November 11 source ZIP remains the archival prior artifact).
 - **PREVIOUS STABLE:** unavailable; no accepted user-reviewed production release.
-- **CURRENT WORK (updated session 4):** branch `agent/grok-bot/verify-quote-panel` (includes sessions 2 and 3) @ work commit `c370580579dd50885e68d67eba11536483f6c077`, unmerged. (Session 3: `agent/grok-bot/odds-cli` @ `855254b`.) `main` is still `034142e`. Earlier: v0.1 imported into the public GitHub repository on `main`. Verify latest commit and create a new `agent/<name>/<task>` branch before any further feature changes; do not assume that a future agent's branch has merged.
+- **CURRENT WORK (updated session 5):** branch `agent/grok-bot/real-props-from-snapshot` (includes sessions 2–4) @ work commit `1101fd57e1f985d96e29a322e4d4a4b6de5edadf`, unmerged. (Session 4: `agent/grok-bot/verify-quote-panel` @ `c1dfb30`.) (Session 3: `agent/grok-bot/odds-cli` @ `855254b`.) `main` is still `034142e`. Earlier: v0.1 imported into the public GitHub repository on `main`. Verify latest commit and create a new `agent/<name>/<task>` branch before any further feature changes; do not assume that a future agent's branch has merged.
 - Global app-continuity rule in `https://github.com/jlemay90/j-god-agent/blob/main/.agents/skills/app-continuity/SKILL.md`; read before making new changes.
 
 ## Source code
