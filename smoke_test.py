@@ -10,9 +10,13 @@ try:
   page=browser.new_page(viewport={'width':390,'height':844},accept_downloads=True)
   errs=[];page.on('pageerror',lambda e: errs.append(str(e)))
   page.goto('file://'+str(ROOT/'index.html'),wait_until='load')
-  assert '3'==page.locator('#totalMetric').inner_text(),page.locator('#totalMetric').inner_text()
-  assert page.locator('.prop-card').count()==3
-  assert 'DEMO ONLY' in page.locator('.prop-card').first.inner_text()
+  # fresh open with empty storage: no seeded sample props, no fake numbers
+  assert '0'==page.locator('#totalMetric').inner_text(),page.locator('#totalMetric').inner_text()
+  assert page.locator('.prop-card').count()==0
+  assert 'No props yet' in page.locator('#boardList').inner_text()
+  assert page.locator('#modeBadge').inner_text()=='NO PROPS YET'
+  assert 'Sample ' not in page.locator('body').inner_text() and 'Illustration only' not in page.locator('body').inner_text()
+  assert page.evaluate("()=>localStorage.getItem('j-nba-prop-intel-v0.1')") is None, 'fresh load must not write records'
   assert page.locator('body').evaluate('(e)=>e.scrollWidth <= window.innerWidth+2'), 'Horizontal overflow on mobile'
   page.screenshot(path=str(ROOT/'mobile-preview.png'),full_page=True)
   page.get_by_role('button',name='+ New prop').click()
@@ -33,7 +37,7 @@ try:
   page.locator('#matchupNotes').fill('Example no real matchup evidence.')
   page.locator('#reason').fill('Caution: testing only.')
   page.get_by_role('button',name='Save research record').click()
-  assert page.locator('#totalMetric').inner_text()=='4'
+  assert page.locator('#totalMetric').inner_text()=='1'
   page.locator('#searchInput').fill('Test Scorer')
   assert page.locator('.prop-card').count()==1
   assert '60%' in page.locator('.prop-card').first.inner_text(),page.locator('.prop-card').first.inner_text()
@@ -48,7 +52,7 @@ try:
   assert 'Independent check missing' in page.locator('#detailsContent').inner_text()
   page.locator('#closeDialog').click()
   page.reload(wait_until='networkidle')
-  assert page.locator('#totalMetric').inner_text()=='4'
+  assert page.locator('#totalMetric').inner_text()=='1'
   assert page.locator('#reviewsMetric').inner_text()=='1'
   with page.expect_download() as dl:
    page.locator('#exportBtn').click()
@@ -56,13 +60,13 @@ try:
   download.save_as(str(ROOT/'smoke-export.json'))
   import json
   obj=json.loads((ROOT/'smoke-export.json').read_text())
-  assert obj['schema']=='j-nba-prop-intel' and len(obj['records'])==4
+  assert obj['schema']=='j-nba-prop-intel' and len(obj['records'])==1
   assert len([r for r in obj['records'] if r['player']=='Test Scorer'][0]['reviews'])==1
   assert not errs,errs
-  print('MOBILE PASS: initial demo, no overflow, add/edit persistence, hit rates, dialog, agent review, export; console exceptions:',errs)
+  print('MOBILE PASS: empty first load (no seeded props), no overflow, add/edit persistence, hit rates, dialog, agent review, export; console exceptions:',errs)
   desktop=browser.new_page(viewport={'width':1280,'height':800})
   desktop.goto('file://'+str(ROOT/'index.html'),wait_until='load')
-  assert desktop.locator('.prop-card').count()==3
+  assert desktop.locator('.prop-card').count()==0 and 'No props yet' in desktop.locator('#boardList').inner_text()  # fresh context: empty, no seeds
   assert desktop.locator('body').evaluate('(e)=>e.scrollWidth <= window.innerWidth+2')
   desktop.screenshot(path=str(ROOT/'desktop-preview.png'),full_page=True)
   print('DESKTOP PASS: initial render, no horizontal overflow')

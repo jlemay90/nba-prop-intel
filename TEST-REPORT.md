@@ -91,3 +91,27 @@ New real-browser cases (390px, `page.clock.set_fixed_time('2026-11-11T23:00:00Z'
 **Secret scan:** only the fake `FAKEKEY000` / `TESTKEY123` strings inside tests; the session's key value was not found anywhere in the tree.
 **NOT tested:** Android Chrome / real device; screen reader; keyboard activation of the "Load snapshot file" label (same pattern as the existing Import label); live snapshots for `player_rebounds` / `player_assists`; `browser_smoke_inline.py` (legacy, hardcoded `/usr/lib/chromium`, not run). Generated preview PNGs and `smoke-export.json` were deleted, not committed.
 
+---
+# TEST REPORT — 2026-11-11 session 5 (Grok Bot) — no seeds + real props from snapshots
+**Environment:** same box and tools as session 4 (Node v24.22.1, Python 3.13.5, Playwright 1.65.0 in `/tmp/pw-venv`, `/usr/bin/google-chrome`). Branch `agent/grok-bot/real-props-from-snapshot` from `agent/grok-bot/verify-quote-panel` @ `c1dfb30`. Final run ~7:23 PM America/Chicago.
+
+| Check | Command | Result |
+|---|---|---|
+| JS syntax | `node --check` on `app.js`, `odds-adapter.js`, `verify-quote.js`, `scripts/*.js` | PASS |
+| Unit tests | `node --test tests/*.js` | **PASS 48/48** (adapter 10, CLI 16, verify-quote 12, snapshot-to-board 9, build-sync 1) |
+| Single-file build | `node scripts/build-single-file.js --check` | in sync |
+| Smoke 390px + 1280px | `CHROMIUM_PATH=/usr/bin/google-chrome python3 smoke_test.py` | PASS (fresh load: 0 cards, "No props yet", badge NO PROPS YET, nothing written to storage, no "Sample"/"Illustration only") |
+| Real-browser regression | `CHROMIUM_PATH=/usr/bin/google-chrome python3 real_browser_test.py` | **PASS 36/36** |
+
+New browser cases: fresh load empty (localhost, file://, single-file); old demo export imported → DEMO ONLY + INCLUDES SYNTHETIC DEMOS (the Verify cases (a)(b)(e) use these test demos); saved legacy seeds + a real record → seeds gone from board and storage, real record intact; Add quotes (MOCK numbers with the flag removed, temp file only) → 3 non-demo cards, mockbook_a −115, "No games", HOLD, injury unknown, "not a pick", Verify OK; re-add → "refreshed 3", no duplicates; keyed snapshot refused, board unchanged, key not echoed; flagged MOCK → 3 DEMO ONLY cards, dropped on reload; no 390px overflow. A first run caught a real bug (a MOCK file could refresh a real card's price because ids matched); fixed with `mock-` ids plus a demo/non-demo merge guard, now covered by a unit test.
+
+**Live fill (credits spent; nothing committed):** at about 7:18 PM America/Chicago, `--list` (0 credits, 499 remaining) then `--event … --markets player_points --regions us` for the 3 games that had not started, plus 2 for tomorrow:
+- Orlando Magic at Utah Jazz (8:10 PM CT): 160 quotes, 0 rejected → **24 cards**
+- Golden State Warriors at Houston Rockets (8:40 PM CT): 338 quotes → **30 cards**
+- Oklahoma City Thunder at Portland Trail Blazers (9:10 PM CT): 270 quotes → **30 cards**
+- Mavericks at Timberwolves and Hornets at Suns (Nov 12): "No verified quote available" (props not posted yet), 0 credits
+- **Credits used: 3. Remaining: 496** (confirmed by a later free `--list`). 6 books per game.
+
+`node scripts/snapshot-to-board.js data/snapshots/*2026-11-12T01*.snapshot.json --out data/board-2026-11-11.json` → 84 records, all `demo:false`, all `recentGames: []`. Cross-checked every record against the raw snapshot quotes: 0 mismatches in book/price/provider time. Prices came from draftkings 72, fanduel 10, betmgm 2. Examples (provider update 7:16 PM CT): Stephen Curry Over/Under 25.5 DK −120/−107; Kevin Durant 21.5 DK −121/−106; Alperen Sengun 19.5 DK −104/−122; Shai Gilgeous-Alexander 33.5 DK −120/−106 (7:18 PM CT). In a real browser at 390px, "Add quotes to the board" with the 3 snapshots showed 84 cards, Verify OK, no overflow, no page errors, no external requests. Importing the board file into `nba-prop-intel.html` showed 84 cards, 0 demo, no "Sample". Screenshots viewed and discarded.
+**NOT tested:** Android device; screen reader; keyboard activation of the file labels; imports right at the 30-minute boundary in a real browser (unit-tested only).
+

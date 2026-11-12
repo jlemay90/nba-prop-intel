@@ -22,6 +22,15 @@ node scripts/fetch-event-odds.js --event <eventId> --markets player_points --reg
 
 Allowed markets: `player_points`, `player_rebounds`, `player_assists`. Offline tests (fake fetch, no network): `node --test tests/*.js`. A live call was made once in session 3 (see TEST-REPORT). MOCK fixtures and synthetic demo props are not real odds. This CLI is not a live feed, and the browser never runs it or calls the provider.
 
+### Fill the board with real props (plain how-to)
+The board starts empty: no sample cards, no made-up numbers.
+1. Get tonight's prices: `node scripts/fetch-event-odds.js --list` (free) shows the games; then for each game that hasn't started, `node scripts/fetch-event-odds.js --event <eventId> --markets player_points --regions us` (1 credit each). Each run saves a file in `data/snapshots/`.
+2. Open the board (`index.html`, or the single file `nba-prop-intel.html`) and tap **Add quotes to the board**. Pick one or more of those snapshot files.
+3. You get one card per player and side (Over / Under) at that player's main line, which is the line most books are offering. The price comes from the first book in a fixed order (DraftKings, FanDuel, BetMGM, Caesars, BetRivers, ESPN BET, Fanatics, Bovada, BetOnline). It is not the "best" price. Only games that haven't started and prices updated in the last 30 minutes are added.
+4. Each card is a price, not a pick. Team, injury, minutes and game logs are left blank on purpose; the card says what's still needed. After 30 minutes the card shows "Quote older than 30m". Adding a newer file for the same game refreshes those prices instead of making duplicates. Your own cards are never removed.
+
+Shortcut: `node scripts/snapshot-to-board.js data/snapshots/*.snapshot.json --out data/board.json` writes a board file (git-ignored) you can open with **Import**. Import replaces the whole board after a confirmation, so use it on an empty board, or use **Add quotes to the board** instead. Files with an API key in them, raw provider responses, and malformed snapshots are refused. `fixtures/MOCK-snapshot.json` is fake test data: if you add it, its cards are labelled DEMO ONLY and disappear the next time the board loads.
+
 ### Verify a price in the board (read-only)
 1. Run the CLI above for one event; it writes `data/snapshots/<eventId>-<collectedAt>.snapshot.json` (git-ignored, stays on your device).
 2. Open the board, tap **Open research** on a card, and in **VERIFY QUOTE** tap **Load snapshot file** and pick that file.
@@ -36,13 +45,14 @@ The file stays in memory for that page session only (it is reused when you open 
 - Freshness flags (older than 30m quote), source-presence checks, incomplete injury/rotation checks, and stale/past games.
 - Independent role-based agent review append log, with citations and timestamps.
 - Local device persistence, import/export JSON; import validates schema and requires confirmation before replacement.
-- Three conspicuously fictional, synthetic demo records. A real record is never classified as researched solely from synthetic data.
+- No seeded sample props (removed 2026-11-11 at the owner's request). Any old synthetic demo record is dropped when the board loads; one arriving through an old JSON import stays labelled DEMO ONLY until the next load.
+- **Add quotes to the board**: real Odds API snapshot quotes become research cards (price only; no invented stats).
 
 ## Standing research authority
 The owner already has a canonical **J’s Sports Prop Framework — MLB and NBA** in the ChatGPT Library at `/J_Sports_Prop_Framework.md` (Oct 22, 2026). Use its method and verdicts `HOLD`, `LEAN`, `PASS`, `VALUE GONE` rather than establishing competing rules. The dated Oct 22 NBA slate inside that file is historic and must NOT be presented as current.
 
 ## Explicit limits
-1. No real/current odds, box scores, injured-player statuses or matchup data have been fetched into this app. Do not treat synthetic demos as real props.
+1. Real current prices can now come in through CLI snapshots ("Add quotes to the board"). Box scores, injured-player statuses and matchup data are still not fetched. A price card is not a researched pick.
 2. Entered URLs and notes are user/agent claims. This prototype checks **presence**, not authenticity or truth; `Checklist complete` is a minimum completeness label, **not verified accuracy** or a profitability signal.
 3. Last-N percentage is descriptive: it is not a projected probability and cannot by itself justify expected-value/edge claims. Implied probability contains sportsbook margin.
 4. Browser storage is device/browser-scoped; export your JSON file. No security boundary prevents a person with browser access from opening records. Do not add sensitive Hub account data.
