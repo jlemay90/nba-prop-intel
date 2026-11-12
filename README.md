@@ -7,7 +7,7 @@
 ## Run it
 Open `index.html` in a browser with the adjacent `styles.css` and `app.js` files, or serve the folder as static files (e.g., `python -m http.server 8000`). A local web server is preferred on browsers that restrict local-file storage. On Android, host on a private HTTPS endpoint to use across devices after implementing authentication and a backend.
 
-## Read-only odds CLI (not wired into the board)
+## Read-only odds CLI
 
 A dependency-free Node script fetches The Odds API event list (0 credits) or one event's player-prop odds, normalizes them with `odds-adapter.js`, and writes a local provenance-stamped snapshot. The key must come from the `ODDS_API_KEY` environment variable. It is never printed, logged, stored, or written into `source_url`. Snapshots land in `data/snapshots/` and are git-ignored until provider terms are reviewed.
 
@@ -20,7 +20,14 @@ node scripts/fetch-event-odds.js --list
 node scripts/fetch-event-odds.js --event <eventId> --markets player_points --regions us
 ```
 
-Allowed markets: `player_points`, `player_rebounds`, `player_assists`. Offline tests (fake fetch, no network): `node --test tests/*.js`. A live provider call has **not** been made in this repository's recorded sessions (no key). MOCK fixtures and synthetic demo props are not real odds. This CLI is not a live feed and is not used by `index.html`.
+Allowed markets: `player_points`, `player_rebounds`, `player_assists`. Offline tests (fake fetch, no network): `node --test tests/*.js`. A live call was made once in session 3 (see TEST-REPORT). MOCK fixtures and synthetic demo props are not real odds. This CLI is not a live feed, and the browser never runs it or calls the provider.
+
+### Verify a price in the board (read-only)
+1. Run the CLI above for one event; it writes `data/snapshots/<eventId>-<collectedAt>.snapshot.json` (git-ignored, stays on your device).
+2. Open the board, tap **Open research** on a card, and in **VERIFY QUOTE** tap **Load snapshot file** and pick that file.
+3. The panel shows **OK** (fresh exact quotes, ≤30 min since the provider's update), **STALE** (exact quotes, all older), or **UNAVAILABLE** (no exact player/market/side/line match, or a market such as 3PT made with no verified provider key). It never falls back to the record's own price or a nearby line, and it is a price check, not a pick.
+
+The file stays in memory for that page session only (it is reused when you open another card) and is never saved into your records or exports. Files with an API key in a source URL are refused. `fixtures/MOCK-snapshot.json` is a synthetic test file that shows how it works.
 
 ## What works
 - Mobile-first prop board with market, state and keyword filters.

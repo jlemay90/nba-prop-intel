@@ -1,6 +1,7 @@
 /* NBA Prop Intel — read-only data adapter CONTRACT (v0.2-dev). Pure functions, no network, no keys.
    Normalizes (a) The Odds API v4 event-odds responses into verified-quote records and
-   (b) BALLDONTLIE /v1/stats rows into game-log samples. Not loaded by index.html yet.
+   (b) BALLDONTLIE /v1/stats rows into game-log samples. Loaded by index.html (session 4) for the read-only
+   Verify quote panel, which only calls findQuotes on a user-loaded snapshot; still no network and no key here.
    Fetching belongs in a server-side wrapper (keys never in this public repo or the browser). */
 (function (root) {
   'use strict';

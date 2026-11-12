@@ -71,3 +71,23 @@ Serve the static folder in a normal authorized browser and rerun `smoke_test.py`
 | Snapshot committed? | `git status` shows `data/` ignored | not committed, as required |
 
 **Still NOT tested:** `player_rebounds` and `player_assists` live; `--list` then a second event (not done, to conserve credits); Android Chrome; UI consumption of the snapshot; provider terms review.
+
+---
+# TEST REPORT — 2026-11-11 session 4 (Grok Bot) — Verify quote panel
+**Environment:** Linux box, Node v24.22.1, Python 3.13.5, Playwright 1.65.0 in `/tmp/pw-venv` (not committed) driving `/usr/bin/google-chrome` headless via `CHROMIUM_PATH`. Branch `agent/grok-bot/verify-quote-panel` from `agent/grok-bot/odds-cli` @ `855254b`. Final run 2026-11-11 ~7:03 PM America/Chicago.
+**Baseline before editing (on `855254b`):** `node --test tests/*.js` 26/26, `real_browser_test.py` 11/11, `smoke_test.py` MOBILE+DESKTOP PASS.
+
+| Check | Command | Result |
+|---|---|---|
+| JS syntax | `node --check` on `app.js`, `odds-adapter.js`, `verify-quote.js`, `scripts/fetch-event-odds.js`, `scripts/build-single-file.js` | PASS |
+| Unit tests | `node --test tests/*.js` | **PASS 39/39** (10 adapter + 16 CLI unchanged + 12 verify-quote + 1 build-sync) |
+| Single-file build in sync | `node scripts/build-single-file.js --check` | PASS |
+| Smoke, real `file://`, 390px + 1280px | `CHROMIUM_PATH=/usr/bin/google-chrome python3 smoke_test.py` | PASS (MOBILE and DESKTOP) |
+| Real-browser regression | `CHROMIUM_PATH=/usr/bin/google-chrome python3 real_browser_test.py` | **PASS 23/23** (original 11 + 12 new) |
+
+New real-browser cases (390px, `page.clock.set_fixed_time('2026-11-11T23:00:00Z')`, committed `fixtures/MOCK-snapshot.json`): (a) demo research file shows the panel with "NO SNAPSHOT LOADED", no status, no "Illustration only"/-110, no horizontal overflow; raw Odds API body refused with an error; (b) MOCK vs demo Sample Lead Guard → UNAVAILABLE, MOCK FIXTURE label, demo price not shown; (c) non-demo Mock Player Alpha Over 24.5 Points → OK, mockbook_a -115, "10 min ago", event shown, record's +175 / book not shown, snapshot reused from a previous card; (c2) Over 25.5 → STALE "older than 30 minutes" with mockbook_b; (d) Over 25 → UNAVAILABLE "No verified quote available", no 24.5/25.5 prices; (e) Sample Wing 3PT made → UNAVAILABLE "no verified provider key yet"; snapshot/quotes absent from localStorage; a file with `apiKey=` in a `source_url` refused, prior snapshot unloaded, key not echoed; no browser request to the-odds-api.com (only the 5 local files); single-file `nba-prop-intel.html` from `file://` works standalone (UNAVAILABLE vs demo); no uncaught page errors.
+
+**Manual, not committed:** loaded the git-ignored live snapshot (`37f4c00f…-2026-11-11T23:35:07.440Z`, Celtics at Raptors) against a temporary record "Immanuel Quickley Over 17.5 Points" at about 7:02 PM America/Chicago → **STALE** (all 6 books' quotes about 87 min old, e.g. fanduel -106, draftkings -120, betmgm -115), as expected after tip-off. The screenshot was viewed and discarded. No new API call was made this session (499 credits remain as of session 3).
+**Secret scan:** only the fake `FAKEKEY000` / `TESTKEY123` strings inside tests; the session's key value was not found anywhere in the tree.
+**NOT tested:** Android Chrome / real device; screen reader; keyboard activation of the "Load snapshot file" label (same pattern as the existing Import label); live snapshots for `player_rebounds` / `player_assists`; `browser_smoke_inline.py` (legacy, hardcoded `/usr/lib/chromium`, not run). Generated preview PNGs and `smoke-export.json` were deleted, not committed.
+

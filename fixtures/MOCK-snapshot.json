@@ -1,0 +1,112 @@
+{
+ "_MOCK": "SYNTHETIC TEST FIXTURE in CLI snapshot shape, derived from fixtures/MOCK-event-odds.json via normalizeEventOdds (see tests/verify-quote.test.js). Players, teams and prices are invented. NEVER display as real odds.",
+ "meta": {
+  "provider": "the-odds-api",
+  "eventId": "mock-event-0001",
+  "collectedAt": "2026-11-11T22:55:00Z",
+  "sourceUrl": "https://api.the-odds-api.com/v4/sports/basketball_nba/events/mock-event-0001/odds?regions=us&markets=player_points,player_rebounds&oddsFormat=american",
+  "markets": "player_points,player_rebounds",
+  "regions": "us",
+  "oddsFormat": "american",
+  "estimatedCost": 2,
+  "mock": true
+ },
+ "quotes": [
+  {
+   "provider": "the-odds-api",
+   "book": "mockbook_a",
+   "event": {
+    "id": "mock-event-0001",
+    "home_team": "Mock Home Team",
+    "away_team": "Mock Away Team",
+    "commence_time": "2026-11-12T00:30:00Z"
+   },
+   "player": "Mock Player Alpha",
+   "market": "Points",
+   "side": "Over",
+   "line": 24.5,
+   "price": -115,
+   "source_url": "https://api.the-odds-api.com/v4/sports/basketball_nba/events/mock-event-0001/odds?regions=us&markets=player_points,player_rebounds&oddsFormat=american",
+   "collected_at": "2026-11-11T22:55:00Z",
+   "provider_updated_at": "2026-11-11T22:50:00Z"
+  },
+  {
+   "provider": "the-odds-api",
+   "book": "mockbook_a",
+   "event": {
+    "id": "mock-event-0001",
+    "home_team": "Mock Home Team",
+    "away_team": "Mock Away Team",
+    "commence_time": "2026-11-12T00:30:00Z"
+   },
+   "player": "Mock Player Alpha",
+   "market": "Points",
+   "side": "Under",
+   "line": 24.5,
+   "price": -105,
+   "source_url": "https://api.the-odds-api.com/v4/sports/basketball_nba/events/mock-event-0001/odds?regions=us&markets=player_points,player_rebounds&oddsFormat=american",
+   "collected_at": "2026-11-11T22:55:00Z",
+   "provider_updated_at": "2026-11-11T22:50:00Z"
+  },
+  {
+   "provider": "the-odds-api",
+   "book": "mockbook_a",
+   "event": {
+    "id": "mock-event-0001",
+    "home_team": "Mock Home Team",
+    "away_team": "Mock Away Team",
+    "commence_time": "2026-11-12T00:30:00Z"
+   },
+   "player": "Mock Player Beta",
+   "market": "Points",
+   "side": "Over",
+   "line": 6.5,
+   "price": -110,
+   "source_url": "https://api.the-odds-api.com/v4/sports/basketball_nba/events/mock-event-0001/odds?regions=us&markets=player_points,player_rebounds&oddsFormat=american",
+   "collected_at": "2026-11-11T22:55:00Z",
+   "provider_updated_at": "2026-11-11T22:50:00Z"
+  },
+  {
+   "provider": "the-odds-api",
+   "book": "mockbook_b",
+   "event": {
+    "id": "mock-event-0001",
+    "home_team": "Mock Home Team",
+    "away_team": "Mock Away Team",
+    "commence_time": "2026-11-12T00:30:00Z"
+   },
+   "player": "Mock Player Alpha",
+   "market": "Points",
+   "side": "Over",
+   "line": 25.5,
+   "price": -110,
+   "source_url": "https://api.the-odds-api.com/v4/sports/basketball_nba/events/mock-event-0001/odds?regions=us&markets=player_points,player_rebounds&oddsFormat=american",
+   "collected_at": "2026-11-11T22:55:00Z",
+   "provider_updated_at": "2026-11-11T20:00:00Z"
+  }
+ ],
+ "rejected": [
+  {
+   "reason": "Price not American odds (request oddsFormat=american)",
+   "price": 1.91,
+   "book": "mockbook_a"
+  },
+  {
+   "reason": "Missing required fields: player",
+   "book": "mockbook_a"
+  },
+  {
+   "reason": "Unmapped market key",
+   "market_key": "player_threes",
+   "book": "mockbook_a"
+  },
+  {
+   "reason": "Missing market last_update (needed to judge staleness)",
+   "book": "mockbook_b"
+  }
+ ],
+ "quota": {
+  "x-requests-last": null,
+  "x-requests-remaining": null
+ }
+}
